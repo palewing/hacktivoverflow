@@ -8,7 +8,7 @@ class UserController {
         User.create({ email, password })
             .then(user => {
                 let token = jwtHelper.generate(user.id);
-                res.status(201).json({ token })
+                res.status(201).json({ token, user: user.email })
             })
             .catch(next)
     }
@@ -18,7 +18,7 @@ class UserController {
             .then(user => {
                 if (hashHelper.compare(req.body.password, user.password)) {
                     let token = jwtHelper.generate(user.id);
-                    res.status(200).json({ token });
+                    res.status(200).json({ token, user: user.email });
                 }
                 else {
                     let err = {

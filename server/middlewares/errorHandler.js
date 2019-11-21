@@ -18,6 +18,9 @@ module.exports = (err, req, res, next) => {
     else if(err.message === `Cannot read property 'password' of null`){
         res.status(400).json({ message: "Email is not registered" })
     }
+    else if(err.message === `jwt malformed`){
+        res.status(400).json({ message: "Please log in first" })
+    }
     else {
         res.status(status).json({ message })
     }

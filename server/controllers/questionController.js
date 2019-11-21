@@ -20,7 +20,12 @@ class QuestionController {
     }
     static getOne(req, res, next) {
         Question.findById(req.params.id)
-            .populate('answers')
+            .populate({
+                path: 'answers',
+                populate: {
+                    path: 'UserId'
+                }
+            })
             .populate('UserId', 'email')
             .then(question => {
                 res.status(200).json(question)
@@ -42,39 +47,40 @@ class QuestionController {
             })
             .catch(next)
     }
-    static upvote(req, res, next){
+    static upvote(req, res, next) {
         Question.findById(req.params.id)
-        .then(question=>{
-            if(question.upvotes.includes(req.user)){
-                let err = {status: 400, message: 'You already upvoted this question'}
-                throw err
-            }
-            return Question.findByIdAndUpdate(question.id, {$pull: {downvotes: req.user} }, {new:true})
-        })
-        .then(question=>{
-            return Question.findByIdAndUpdate(question.id, {$push: {upvotes: req.user} }, {new:true})
-        })
-        .then(question=>{
-            res.status(200).json(question)
-        })
-        .catch(next)
+            .then(question => {
+                if (question.upvotes.includes(req.user)) {
+                    let err = { status: 400, message: 'You already upvoted this question' }
+                    throw err
+                }
+                return Question.findByIdAndUpdate(question.id, { $pull: { downvotes: req.user } }, { new: true })
+            })
+            .then(question => {
+                return Question.findByIdAndUpdate(question.id, { $push: { upvotes: req.user } }, { new: true }).populate('UserId')
+            })
+            .then(question => {
+                res.status(200).json(question)
+            })
+            .catch(next)
     }
-    static downvote(req, res, next){
+    static downvote(req, res, next) {
         Question.findById(req.params.id)
-        .then(question=>{
-            if(question.downvotes.includes(req.user)){
-                let err = {status: 400, message: 'You already downvoted this question'}
-                throw err
-            }
-            return Question.findByIdAndUpdate(question.id, {$pull: {upvotes: req.user} }, {new:true})
-        })
-        .then(question=>{
-            return Question.findByIdAndUpdate(question.id, {$push: {downvotes: req.user} }, {new:true})
-        })
-        .then(question=>{
-            res.status(200).json(question)
-        })
-        .catch(next)
+            .populate('UserId')
+            .then(question => {
+                if (question.downvotes.includes(req.user)) {
+                    let err = { status: 400, message: 'You already downvoted this question' }
+                    throw err
+                }
+                return Question.findByIdAndUpdate(question.id, { $pull: { upvotes: req.user } }, { new: true })
+            })
+            .then(question => {
+                return Question.findByIdAndUpdate(question.id, { $push: { downvotes: req.user } }, { new: true }).populate('UserId')
+            })
+            .then(question => {
+                res.status(200).json(question)
+            })
+            .catch(next)
     }
 }
 
